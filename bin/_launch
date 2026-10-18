@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Shared launcher for golden/bin/*. Runs golden/lib/cli.py on the harness venv's
+# Python 3.14 -- the one interpreter setup.sh guarantees carries pyyaml, pytest
+# and harbor -- falling back to a system python3.14.
+set -u
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+KIT="$(cd "$HERE/../.." && pwd)"
+HARNESS="${DEKU_HARNESS_DIR:-$KIT/deku-harness}"
+PY="$HARNESS/.venv/bin/python"
+if [ ! -x "$PY" ]; then
+  PY="$(command -v python3.14 || true)"
+fi
+if [ -z "$PY" ]; then
+  echo "golden: no Python 3.14 found -- run ./scripts/setup.sh first" >&2
+  exit 2
+fi
+exec "$PY" "$HERE/../lib/cli.py" "$@"

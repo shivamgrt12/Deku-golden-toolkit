@@ -1,0 +1,68 @@
+schema: golden-skill-routing-v1
+
+precedence: >-
+  OVERRIDES.md outranks every skill. A skill that says otherwise (GSAP for graded motion, a
+  git commit per step, a hotlinked image, a dependency the brief never asked for) is overruled
+  without discussion. Skills are advice; the gauntlet is the bar.
+
+phases:
+  P-1:
+    load: []
+  P0:
+    load: [brief-to-domain, brainstorming, writing-plans]
+    note: >-
+      brainstorming and writing-plans shape PLAN.md. Ignore their git steps (no commits) and
+      brainstorming's optional visual-companion server, which is not vendored.
+  P1:
+    load: [ui-ux-pro-max, frontend-design, layout-rigor, "<taste style for the direction, below>"]
+    note: >-
+      ui-ux-pro-max: run its local search, e.g.
+      python3 .claude/skills/ui-ux-pro-max/scripts/search.py "<product> <mood>" --design-system
+      (offline; CSV data only). Its GSAP presets are not usable for graded motion.
+  P2:
+    load: [api-contract, postgres-bundle, integration-sourcing, fullstack-guardian,
+           test-driven-development, executing-plans]
+  P3:
+    load: [frontend-design, layout-rigor, "<taste style for the direction>", media-assets,
+           ui-ux-pro-max, modern-effects]
+    load_when_DESIGN_md_visual_ambition_plans_it: [award-caliber-motion, webgl-components,
+                                                   premium-3d-website]
+    finish: >-
+      modern-effects builds DESIGN.md ## Finish with native CSS only (@starting-style, View
+      Transitions, scroll-driven animations, @property, OKLCH, grain, depth), never past the
+      direction's motion character.
+    note: >-
+      design-taste-frontend may fetch licensed imagery with its asset scripts; every file it
+      fetches is VENDORED into the app and listed in sources.md Assets. Never keep a picsum or
+      CDN URL in the app -- G5 fails any request to another origin.
+  P4:
+    load: [secure-code-guardian, fullstack-guardian, systematic-debugging]
+  P5:
+    load: [ponytail, ponytail-review, ponytail-audit, requesting-code-review]
+  P6:
+    load: [systematic-debugging, verification-before-completion]
+  P7:
+    load: [verification-before-completion]
+  every_phase:
+    load: [verification-before-completion, receiving-code-review]
+    note: a phase is done when its script says so, never on the agent's word.
+
+# genkit draws task.toml [metadata].design_direction from an 8-entry bank (genkit reference/L
+# §L.6). Each maps to the taste-skill style closest to its mood; the DIRECTION wins where the
+# style disagrees (e.g. its motion character).
+taste_style_for_direction:
+  editorial-serif: high-end-visual-design
+  dense-ops-console: minimalist-ui
+  clinical-precision: minimalist-ui
+  terminal-mono: industrial-brutalist-ui
+  warm-hospitality: high-end-visual-design
+  playful-consumer: design-taste-frontend
+  brutalist-utility: industrial-brutalist-ui
+  glass-depth: design-taste-frontend
+  companion: design-taste-frontend   # the companion document's measured character wins
+
+not_vendored:
+  design-system: hotlinks stock images and generates slides; ui-ux-pro-max --design-system covers tokens
+  using-superpowers: a bootstrap that competes with RUN.md as the process spine
+  using-git-worktrees: git branch operations are out of scope for golden work
+  finishing-a-development-branch: commits and merges are the member's, never the agent's

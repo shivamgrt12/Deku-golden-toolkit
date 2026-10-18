@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# golden-install
+#
+# Run once after cloning this repo into a deku-task-kit checkout as golden/, and
+# again after every `git pull`. It puts the /golden command where each editor
+# looks for it, keeps the toolkit and its synced skill copies out of the kit's
+# own git, and installs the pinned skills:
+#
+#   golden/editor/claude/commands/golden.md   -> .claude/commands/golden.md
+#   golden/editor/cursor/commands/golden.md   -> .cursor/commands/golden.md
+#   golden/editor/cursor/rules/golden.mdc     -> .cursor/rules/golden.mdc
+#   golden/editor/opencode/command/golden.md  -> .opencode/command/golden.md
+set -eu
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+KIT="$(cd "$HERE/../.." && pwd)"
+[ -d "$KIT/genkit" ] && [ -d "$KIT/deku-harness" ] || {
+  echo "golden-install: $KIT is not a deku-task-kit checkout (clone this repo into it as golden/)" >&2
+  exit 2
+}
+for f in claude/commands/golden.md cursor/commands/golden.md cursor/rules/golden.mdc opencode/command/golden.md; do
+  dest="$KIT/.${f}"
+  mkdir -p "$(dirname "$dest")"
+  cp "$KIT/golden/editor/$f" "$dest"
+  echo "installed .${f}"
+done
+ignore="$KIT/.gitignore"
+touch "$ignore"
+if ! grep -qx "/golden/" "$ignore"; then
+  { echo ""; echo "# the golden toolkit is its own git repo"; echo "/golden/"; } >> "$ignore"
+fi
+while IFS= read -r line; do
+  [ -z "$line" ] && continue
+  grep -qxF "$line" "$ignore" || echo "$line" >> "$ignore"
+done < "$KIT/golden/gitignore-additions.txt"
+echo "updated .gitignore"
+"$HERE/golden-sync-skills"

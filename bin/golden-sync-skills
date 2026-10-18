@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# golden-sync-skills [--check]
+#
+# Installs the pinned third-party skills in golden/skills/vendor/ into the skill
+# folder of every tool a member may use, so Cursor, Claude Code and OpenCode all
+# see the same roster at the same version:
+#
+#   .claude/skills/   .cursor/skills/   .opencode/skills/
+#
+# Each installed copy carries a .golden-vendored marker. A directory of the same
+# name WITHOUT the marker belongs to someone else (the kit's own skills live in
+# .claude/skills/) and is never overwritten -- the sync stops instead.
+# --check reports drift without changing anything (exit 2 on drift).
+set -u
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+KIT="$(cd "$HERE/../.." && pwd)"
+VENDOR="$KIT/golden/skills/vendor"
+TARGETS=".claude/skills .cursor/skills .opencode/skills"
+CHECK=0; [ "${1:-}" = "--check" ] && CHECK=1
+drift=0
+
+for target in $TARGETS; do
+  dest_root="$KIT/$target"
+  [ "$CHECK" = 1 ] || mkdir -p "$dest_root"
+  for src in "$VENDOR"/*/; do
+    name="$(basename "$src")"
+    dest="$dest_root/$name"
+    if [ -e "$dest" ] && [ ! -f "$dest/.golden-vendored" ]; then
+      echo "golden-sync-skills: $target/$name exists and is not a golden-vendored copy -- refusing" >&2
+      exit 2
+    fi
+    if [ "$CHECK" = 1 ]; then
+      if ! diff -rq --exclude .golden-vendored "$src" "$dest" >/dev/null 2>&1; then
+        echo "  drift: $target/$name"; drift=1
+      fi
+      continue
+    fi
+    rm -rf "$dest"
+    cp -R "$src" "$dest"
+    echo "golden/skills/vendor/$name -- see golden/skills/PROVENANCE.md" > "$dest/.golden-vendored"
+  done
+done
+
+if [ "$CHECK" = 1 ]; then
+  [ "$drift" = 0 ] && echo "golden-sync-skills: all tools in sync" && exit 0
+  echo "golden-sync-skills: run golden/bin/golden-sync-skills to fix" >&2; exit 2
+fi
+
+# The installed copies are reproducible from vendor/, so they stay out of git.
+IGNORE="$KIT/.gitignore"
+if ! grep -q "^# golden-sync-skills" "$IGNORE" 2>/dev/null; then
+  {
+    echo ""
+    echo "# golden-sync-skills: installed copies of golden/skills/vendor/ (regenerate, never edit)"
+    for src in "$VENDOR"/*/; do
+      name="$(basename "$src")"
+      for target in $TARGETS; do echo "/$target/$name/"; done
+    done
+  } >> "$IGNORE"
+fi
+echo "golden-sync-skills: $(ls -d "$VENDOR"/*/ | wc -l | tr -d ' ') skill(s) installed into $TARGETS"

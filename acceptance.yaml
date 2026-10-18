@@ -1,0 +1,70 @@
+schema: golden-acceptance-v1
+
+deploy:
+  health_path: /api/health
+  health_timeout_sec: 240
+  cold_starts: 2
+  startup_log_error_patterns:
+    - "(?i)\\btraceback\\b"
+    - "(?i)\\berror\\b"
+    - "(?i)\\bunhandled\\b"
+    - "(?i)\\bdeprecat"
+  startup_log_allow_patterns: []
+
+build:
+  warnings: blocking
+  warning_patterns:
+    - "(?i)npm warn"
+    - "(?i)\\bwarning\\b"
+    - "(?i)deprecated"
+  warning_allow_patterns:
+    - "(?i)pip.*running pip as the 'root' user"
+    - "(?i)new (major|minor) version of npm available"
+    - "(?i)WARNING: Running pip as the 'root' user"
+
+pytest:
+  allow_skipped: []
+  min_tests: 1
+
+graders:
+  require_complete_basis: true
+  combined_score: 1.0
+  workflow_score: 1.0
+  pytest_score: 1.0
+  rubric_score_discounted: 1.0
+  max_review_queue: 0
+  allow_degraded: false
+
+official:
+  oracle_runs: 2
+  nop_reward: 0.0
+
+inspect:
+  max_pages: 25
+  extra_routes: []
+  console_errors: 0
+  console_warnings: 0
+  max_overflow_px: 1
+  max_cls: 0.1
+  axe_block_impacts: [critical, serious, moderate, minor]
+  external_origin_allow: []
+  media:
+    oversize_ratio: 2.5          # natural width > 2.5x the widest it is ever shown
+    max_bytes_per_px: 0.6        # bytes per device pixel of its largest box at 2x
+    min_bytes_budget: 150000     # never flag an image under this many bytes for weight
+
+aesthetic:
+  min_font_px: 12
+  max_low_contrast: 0
+  max_transition_all: 0
+  max_font_weights: 3
+  measure_band: [45, 90]
+  advisory: [max_font_weights, measure_band]
+
+abuse:
+  require_task_suite: true
+  unauthenticated_write_allow:
+    - "(?i)/api/(auth|login|logout|signup|sign-up|register|session|token|password|reset)"
+
+code:
+  leak_allow: []

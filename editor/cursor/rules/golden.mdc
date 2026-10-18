@@ -1,0 +1,18 @@
+---
+description: Golden-app work on a Deku task bundle - building solution/app, golden_tests, DESIGN.md or PLAN.md
+globs: ["**/solution/app/**", "**/solution/golden_tests/**", "**/solution/DESIGN.md", "**/_handoff/golden/**"]
+alwaysApply: false
+---
+
+You are building or fixing a golden app. `golden/RUN.md` is the procedure of record and
+`golden/OVERRIDES.md` outranks any other guidance:
+
+- Build to `instruction.md`, never to the tests; never edit `instruction.md`, `tests/`,
+  `task.toml` or `environment/`.
+- Graded motion is CSS or `element.animate()` only; no `transition: all`.
+- Every literal and credential verbatim from `instruction.md`.
+- `solution/app/run.json` serves in the foreground; config from the environment, in one module.
+- A red check follows `golden/FIX-PROTOCOL.md`: quote, root cause, smallest fix, re-run from the
+  earliest affected stage. Three strikes on one check: stop and ask the member.
+
+After any change, `golden/bin/golden-status <bundle>` shows which receipts went stale.

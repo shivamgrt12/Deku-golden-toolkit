@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+# golden-bridge {start|status|stop|restart}
+#
+# The graders call Claude through the harness's OAuth bridge
+# (deku-harness/bridge/claude_code), which spends a Claude Max subscription
+# instead of an API key. It reads the `claude` CLI's own login from the macOS
+# keychain, so `claude` must be logged in on this machine.
+#
+# Bound to 0.0.0.0 because the grader CONTAINERS reach it as
+# host.docker.internal:8765 -- and locked with deku-harness/.bridge_secret, so
+# nothing without the secret can spend the subscription.
+set -u
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+KIT="$(cd "$HERE/../.." && pwd)"
+HARNESS="${DEKU_HARNESS_DIR:-$KIT/deku-harness}"
+PORT="${DEKU_BRIDGE_PORT:-8765}"
+LOG="$HARNESS/.golden-bridge.log"
+PIDFILE="$HARNESS/.golden-bridge.pid"
+SECRET_FILE="$HARNESS/.bridge_secret"
+
+healthy() {
+  curl -fsS --max-time 5 "http://127.0.0.1:${PORT}/healthz" 2>/dev/null | grep -q '"ok": *true'
+}
+
+# The bridge process listening on PORT, if the listener IS a Claude bridge.
+bridge_pid() {
+  local pid
+  pid="$(lsof -tiTCP:"$PORT" -sTCP:LISTEN 2>/dev/null | head -1)"
+  [ -n "$pid" ] && ps -o command= -p "$pid" 2>/dev/null | grep -q "bridge.claude_code" && echo "$pid"
+}
+
+# A bridge that is up but answers 503 is almost always holding a refresh token the
+# `claude` CLI has since rotated: every refresh is refused (400) until the bridge
+# re-reads the current login from the keychain, which a restart does.
+stop_bridge() {
+  local pid
+  [ -s "$PIDFILE" ] && kill "$(cat "$PIDFILE")" 2>/dev/null
+  pid="$(bridge_pid)"
+  [ -n "$pid" ] && kill "$pid" 2>/dev/null
+  rm -f "$PIDFILE"
+  for _ in $(seq 1 10); do [ -z "$(bridge_pid)" ] && return 0; sleep 1; done
+}
+
+case "${1:-status}" in
+  restart)
+    stop_bridge
+    exec "$0" start
+    ;;
+  start)
+    if healthy; then
+      echo "golden-bridge: already running on :${PORT}"
+      exit 0
+    fi
+    if [ -n "$(bridge_pid)" ]; then
+      echo "golden-bridge: a bridge is running but unhealthy (usually a rotated login token) -- restarting"
+      stop_bridge
+    elif lsof -tiTCP:"$PORT" -sTCP:LISTEN >/dev/null 2>&1; then
+      echo "golden-bridge: port ${PORT} is taken by another program; set DEKU_BRIDGE_PORT" >&2
+      exit 2
+    fi
+    if [ ! -s "$SECRET_FILE" ]; then
+      echo "golden-bridge: $SECRET_FILE is missing -- run ./scripts/setup.sh first" >&2
+      exit 2
+    fi
+    if ! "$HARNESS/scripts/deku-py" -m bridge.claude_code --check >/dev/null 2>"$LOG"; then
+      echo "golden-bridge: cannot load your Claude login:" >&2
+      sed 's/^/  /' "$LOG" >&2
+      echo "  -> run \`claude\` once and log in with your Max account, then retry" >&2
+      exit 2
+    fi
+    (cd "$HARNESS" && DEKU_CC_BRIDGE_SECRET="$(tr -d '[:space:]' < "$SECRET_FILE")" \
+      nohup "$HARNESS/scripts/deku-py" -m bridge.claude_code --host 0.0.0.0 --port "$PORT" \
+      >"$LOG" 2>&1 < /dev/null & echo $! > "$PIDFILE")
+    for _ in $(seq 1 30); do
+      if healthy; then
+        echo "golden-bridge: running on :${PORT} (pid $(cat "$PIDFILE"), log $LOG)"
+        exit 0
+      fi
+      sleep 1
+    done
+    echo "golden-bridge: did not become healthy; see $LOG" >&2
+    exit 2
+    ;;
+  status)
+    if healthy; then echo "golden-bridge: running on :${PORT}"; exit 0; fi
+    if [ -n "$(bridge_pid)" ]; then
+      echo "golden-bridge: running but UNHEALTHY -- fix with: golden/bin/golden-bridge restart"
+      exit 2
+    fi
+    echo "golden-bridge: not running (start it with: golden/bin/golden-bridge start)"
+    exit 2
+    ;;
+  stop)
+    if [ -n "$(bridge_pid)" ] || [ -s "$PIDFILE" ]; then
+      stop_bridge
+      echo "golden-bridge: stopped"
+    else
+      echo "golden-bridge: no bridge is running"
+    fi
+    ;;
+  *)
+    echo "usage: golden-bridge {start|status|stop|restart}" >&2
+    exit 2
+    ;;
+esac
