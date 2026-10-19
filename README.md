@@ -18,7 +18,7 @@ Desktop running, and the `claude` CLI logged in with a Claude Max account. No AP
 ```bash
 cd /path/to/deku-task-kit
 git clone https://github.com/shivamgrt12/Deku-golden-toolkit.git golden
-golden/bin/golden-install          # /golden command for Claude Code, Cursor and OpenCode + skills
+golden/bin/golden-install          # /golden command for Claude Code, Cursor, OpenCode and Kiro + skills
 golden/bin/golden-bridge start     # graders on your Claude login
 golden/bin/gauntlet --self-test    # must print "N passed"
 ```
@@ -40,7 +40,7 @@ toolkit looks wrong, report it with the stage's output.
 
 ## Use
 
-Open the kit folder in Cursor, Claude Code or OpenCode and run `/golden <absolute bundle path>`,
+Open the kit folder in Cursor, Claude Code, OpenCode or Kiro and run `/golden <absolute bundle path>`,
 or tell the agent *"follow golden/RUN.md for `<bundle>`"*. `golden/bin/golden-status <bundle>`
 shows where things stand and the next command at any time. `INSTALL.md` covers troubleshooting.
 
@@ -48,7 +48,7 @@ shows where things stand and the next command at any time. `INSTALL.md` covers t
 
 ## Building a golden app
 
-Open the kit in **Cursor, Claude Code or OpenCode** and run the `golden` command with the bundle
+Open the kit in **Cursor, Claude Code, OpenCode or Kiro** and run the `golden` command with the bundle
 path (`/golden <bundle>`), or tell the agent: *"follow golden/RUN.md for `<bundle>`"*. Optional
 inputs first:
 

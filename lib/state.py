@@ -1,7 +1,7 @@
 """The golden run's phase machine, persisted in _handoff/golden/state.json.
 
 State is on disk, not in an agent's context, so a member can stop in Cursor and
-resume in Claude Code or OpenCode: `golden-status` reconstructs where things
+resume in Claude Code, OpenCode or Kiro: `golden-status` reconstructs where things
 stand from this file plus the receipts.
 """
 from __future__ import annotations

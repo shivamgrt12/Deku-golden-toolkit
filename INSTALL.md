@@ -11,7 +11,7 @@ and changes none of the kit's own.
 | `./scripts/setup.sh` already run (the harness `.venv` exists) | golden runs on the harness's Python 3.14 |
 | Docker Desktop, running | every gauntlet stage runs in containers |
 | The `claude` CLI logged in with a Claude Max account | the graders run through the OAuth bridge; no API key |
-| Cursor, Claude Code or OpenCode | the agent that builds the app |
+| Cursor, Claude Code, OpenCode or Kiro | the agent that builds the app |
 | Optional: `ffmpeg` (`brew install ffmpeg`) | only for a brief that needs rendered video |
 | Optional: `prd-generator` checked out beside `deku-task-kit` (or `DEKU_PRDGEN_DIR`) | only for `golden-init --site` |
 
@@ -25,11 +25,12 @@ golden/bin/golden-bridge start       # graders on your Claude login
 golden/bin/gauntlet --self-test      # must print "N passed"
 ```
 
-`golden-install` puts the `/golden` command in place for all three editors:
+`golden-install` puts the `/golden` command in place for all four editors:
 
 - `.claude/commands/golden.md` (Claude Code)
 - `.cursor/commands/golden.md` and `.cursor/rules/golden.mdc` (Cursor)
 - `.opencode/command/golden.md` (OpenCode)
+- `.kiro/prompts/golden.md` (Kiro)
 
 It also adds `/golden/` and the synced skill copies to the kit's `.gitignore`, so the kit's own
 git never picks up the toolkit.

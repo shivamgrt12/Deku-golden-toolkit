@@ -2,10 +2,10 @@
 # golden-sync-skills [--check]
 #
 # Installs the pinned third-party skills in golden/skills/vendor/ into the skill
-# folder of every tool a member may use, so Cursor, Claude Code and OpenCode all
+# folder of every tool a member may use, so Cursor, Claude Code, OpenCode and Kiro all
 # see the same roster at the same version:
 #
-#   .claude/skills/   .cursor/skills/   .opencode/skills/
+#   .claude/skills/   .cursor/skills/   .opencode/skills/   .kiro/skills/
 #
 # Each installed copy carries a .golden-vendored marker. A directory of the same
 # name WITHOUT the marker belongs to someone else (the kit's own skills live in
@@ -15,7 +15,7 @@ set -u
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 KIT="$(cd "$HERE/../.." && pwd)"
 VENDOR="$KIT/golden/skills/vendor"
-TARGETS=".claude/skills .cursor/skills .opencode/skills"
+TARGETS=".claude/skills .cursor/skills .opencode/skills .kiro/skills"
 CHECK=0; [ "${1:-}" = "--check" ] && CHECK=1
 drift=0
 

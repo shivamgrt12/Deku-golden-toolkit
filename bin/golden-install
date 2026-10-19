@@ -10,6 +10,7 @@
 #   golden/editor/cursor/commands/golden.md   -> .cursor/commands/golden.md
 #   golden/editor/cursor/rules/golden.mdc     -> .cursor/rules/golden.mdc
 #   golden/editor/opencode/command/golden.md  -> .opencode/command/golden.md
+#   golden/editor/kiro/prompts/golden.md      -> .kiro/prompts/golden.md
 set -eu
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 KIT="$(cd "$HERE/../.." && pwd)"
@@ -17,7 +18,7 @@ KIT="$(cd "$HERE/../.." && pwd)"
   echo "golden-install: $KIT is not a deku-task-kit checkout (clone this repo into it as golden/)" >&2
   exit 2
 }
-for f in claude/commands/golden.md cursor/commands/golden.md cursor/rules/golden.mdc opencode/command/golden.md; do
+for f in claude/commands/golden.md cursor/commands/golden.md cursor/rules/golden.mdc opencode/command/golden.md kiro/prompts/golden.md; do
   dest="$KIT/.${f}"
   mkdir -p "$(dirname "$dest")"
   cp "$KIT/golden/editor/$f" "$dest"
